@@ -15,5 +15,7 @@ RUN poetry install --no-dev --no-interaction --no-ansi
 # Copy application code
 COPY . .
 
-# Default command (override in docker-compose or when running)
-CMD ["python", "-m", "scripts"]
+# Default command - start scheduler
+# Override in docker-compose.yml or when running:
+#   docker run <image> python scripts/runner.py scripts/notifications/email_check.py
+CMD ["python", "scripts/runner.py", "--scheduler"]

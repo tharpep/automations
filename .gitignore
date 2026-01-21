@@ -40,6 +40,10 @@ Thumbs.db
 # Config (if contains secrets)
 # config/config.yaml
 
+# Environment variables
+.env
+.env.local
+
 # Logs
 *.log
 logs/

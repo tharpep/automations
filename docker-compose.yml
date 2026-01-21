@@ -8,8 +8,12 @@ services:
       - ./scripts:/app/scripts
       - ./utils:/app/utils
       - ./config:/app/config
+      - ./.env:/app/.env  
+    env_file:
+      - .env
     environment:
       - PYTHONUNBUFFERED=1
-    # Override command for specific scripts
-    # command: python scripts/<category>/<script_name>.py
+    # Default: runs scheduler
+    # Override to run a specific script once:
+    # command: python scripts/runner.py scripts/notifications/email_check.py
     restart: unless-stopped

@@ -5,10 +5,21 @@ logging:
   level: INFO
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
+# Scheduled scripts
+# Run 'python scripts/runner.py --scheduler' to start the scheduler
+schedules:
+  # Example: Run daily summary every morning at 8:00 AM
+  # - script: scripts/summaries/daily_summary.py
+  #   schedule: "daily"
+  #   time: "08:00"
+  
+  # Example: Check emails every 30 minutes
+  # - script: scripts/notifications/email_check.py
+  #   schedule: "every 30 minutes"
+
 # Script-specific settings
 scripts:
-  # Add script-specific configs here
-  # example:
-  #   backup:
-  #     interval: 3600
-  #     destination: /backups
+  daily_summary:
+    send_to: null  # Override with SUMMARY_EMAIL in .env if needed
+  email_check:
+    check_interval: 30  # minutes
