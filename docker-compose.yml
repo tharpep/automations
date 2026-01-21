@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  automations:
+    build: .
+    container_name: automations
+    volumes:
+      - ./scripts:/app/scripts
+      - ./utils:/app/utils
+      - ./config:/app/config
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Override command for specific scripts
+    # command: python scripts/<category>/<script_name>.py
+    restart: unless-stopped

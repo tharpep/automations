@@ -1,0 +1,14 @@
+# Global configuration for automations
+
+# Logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Script-specific settings
+scripts:
+  # Add script-specific configs here
+  # example:
+  #   backup:
+  #     interval: 3600
+  #     destination: /backups
