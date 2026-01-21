@@ -3,7 +3,6 @@ import time
 import importlib.util
 import sys
 from pathlib import Path
-from typing import Callable
 from utils.logger import setup_logger
 from utils.config_loader import load_config
 
@@ -29,48 +28,52 @@ def run_script(script_path: str):
 
 
 def start_scheduler(config_path: str = "config/config.yaml"):
-    """
-    Start the scheduler based on config.yaml schedules.
-
-    Config format:
-    schedules:
-      - script: scripts/category/script.py
-        schedule: "daily"  # or "hourly", "every 5 minutes", cron-like
-        time: "09:00"  # for daily schedules
-    """
+    """Start the scheduler based on config.yaml schedules."""
     config = load_config(config_path)
     logger = setup_logger(__name__, config)
 
-    schedules = config.get("schedules", [])
+    schedules_config = config.get("schedules", [])
 
-    if not schedules:
-        logger.info("No schedules configured. Run scripts manually or add schedules to config.yaml")
+    if not schedules_config:
+        logger.info("No schedules configured. Add schedules to config.yaml")
         return
 
-    for schedule_config in schedules:
-        script = schedule_config.get("script")
-        schedule_type = schedule_config.get("schedule", "daily")
-        schedule_time = schedule_config.get("time", "09:00")
+    scheduled_count = 0
+    for sched in schedules_config:
+        script = sched.get("script")
+        schedule_type = sched.get("schedule", "daily")
+        schedule_time = sched.get("time", "09:00")
+        enabled = sched.get("enabled", True)
+
+        if not enabled:
+            logger.info(f"Skipping disabled schedule: {script}")
+            continue
 
         if schedule_type == "daily":
             schedule.every().day.at(schedule_time).do(run_script, script_path=script)
-            logger.info(f"Scheduled {script} to run daily at {schedule_time}")
+            logger.info(f"Scheduled {script} daily at {schedule_time}")
         elif schedule_type == "hourly":
             schedule.every().hour.do(run_script, script_path=script)
-            logger.info(f"Scheduled {script} to run hourly")
+            logger.info(f"Scheduled {script} hourly")
         elif "minute" in schedule_type.lower():
-            # Parse "every 5 minutes" or "every 30 minutes"
             try:
                 minutes = int(schedule_type.split()[1])
                 schedule.every(minutes).minutes.do(run_script, script_path=script)
-                logger.info(f"Scheduled {script} to run every {minutes} minutes")
+                logger.info(f"Scheduled {script} every {minutes} minutes")
             except (IndexError, ValueError):
                 logger.error(f"Invalid schedule format: {schedule_type}")
+                continue
 
-    logger.info("Scheduler started. Press Ctrl+C to stop.")
+        scheduled_count += 1
+
+    if scheduled_count == 0:
+        logger.info("No enabled schedules found")
+        return
+
+    logger.info(f"Scheduler started with {scheduled_count} schedule(s). Ctrl+C to stop.")
     try:
         while True:
             schedule.run_pending()
-            time.sleep(60)  # Check every minute
+            time.sleep(60)
     except KeyboardInterrupt:
         logger.info("Scheduler stopped")

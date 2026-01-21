@@ -1,17 +1,14 @@
 """
-Script runner - execute scripts on-demand or start scheduler.
+Automation runner - execute automations on-demand or start scheduler.
 
 Usage:
-    python scripts/runner.py <script_path>  # Run once
-    python scripts/runner.py --scheduler    # Start scheduler
+    python runner.py <script_path>  # Run once
+    python runner.py --scheduler    # Start scheduler
 """
 
 import sys
 import argparse
 from pathlib import Path
-
-# Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.scheduler import run_script, start_scheduler
 from utils.logger import setup_logger
@@ -19,12 +16,11 @@ from utils.config_loader import load_config
 
 
 def main():
-    """Main entry point for script runner."""
     parser = argparse.ArgumentParser(description="Run automation scripts")
     parser.add_argument(
         "script",
         nargs="?",
-        help="Path to script to run (e.g., scripts/notifications/email_check.py)",
+        help="Path to script (e.g., scheduled/daily_summary.py)",
     )
     parser.add_argument(
         "--scheduler",
