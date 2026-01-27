@@ -1,0 +1,38 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/automations/automations:$COMMIT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/automations/automations:latest'
+      - '.'
+
+  # Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/automations/automations'
+
+  # Install dependencies and run deploy.py
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install poetry
+        poetry config virtualenvs.create false
+        poetry install --no-interaction
+        python deploy.py sync
+    env:
+      - 'GCP_PROJECT_ID=$PROJECT_ID'
+      - 'GCP_REGION=us-central1'
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/automations/automations:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/automations/automations:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
