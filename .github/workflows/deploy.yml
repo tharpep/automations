@@ -1,3 +1,10 @@
+# Deploy automations to GCP Cloud Run on push to main.
+#
+# Prerequisites:
+# - GitHub repo secrets: GCP_PROJECT_ID, GCP_SA_KEY (JSON key for a service account with
+#   roles/run.admin, roles/artifactregistry.writer, roles/iam.serviceAccountUser)
+# - Artifact Registry repo and GCP one-time setup (see README).
+
 name: Deploy Automations
 
 on:
@@ -5,21 +12,17 @@ on:
     branches: [main]
 
 env:
-  PROJECT_ID: api-gateway
   REGION: us-central1
+  SERVICE: automations
   REPOSITORY: automations
-  IMAGE: automations
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - id: auth
-        name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -28,13 +31,13 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker
+      - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-      - name: Build and Push Image
+      - name: Build and push
         run: |
-          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest .
-          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }} .
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -48,6 +51,6 @@ jobs:
 
       - name: Deploy to GCP
         env:
-          GCP_PROJECT_ID: ${{ env.PROJECT_ID }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ env.REGION }}
         run: poetry run python deploy.py sync
