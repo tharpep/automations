@@ -1,9 +1,6 @@
 # Deploy automations to GCP Cloud Run on push to main.
 #
-# Prerequisites:
-# - GitHub repo secrets: GCP_PROJECT_ID, GCP_SA_KEY (JSON key for a service account with
-#   roles/run.admin, roles/artifactregistry.writer, roles/iam.serviceAccountUser)
-# - Artifact Registry repo and GCP one-time setup (see README).
+
 
 name: Deploy Automations
 
