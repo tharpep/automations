@@ -7,9 +7,15 @@ import httpx
 
 
 class GatewayClient:
-    def __init__(self, base_url: str | None = None):
+    def __init__(self, base_url: str | None = None, api_key: str | None = None):
         self.base_url = base_url or os.getenv("API_GATEWAY_URL", "http://localhost:8000")
-        self._client = httpx.Client(base_url=self.base_url, timeout=30.0)
+        self.api_key = api_key or os.getenv("API_GATEWAY_KEY", "")
+        
+        headers = {}
+        if self.api_key:
+            headers["X-API-Key"] = self.api_key
+        
+        self._client = httpx.Client(base_url=self.base_url, timeout=30.0, headers=headers)
 
     def notify(self, title: str, message: str, priority: int = 0) -> dict:
         """Send a push notification via the gateway."""
