@@ -8,7 +8,7 @@ import httpx
 
 class GatewayClient:
     def __init__(self, base_url: str | None = None, api_key: str | None = None):
-        self.base_url = base_url or os.getenv("API_GATEWAY_URL", "http://localhost:8000")
+        self.base_url = base_url or os.getenv("API_GATEWAY_URL", "https://api-gateway-252332699398.us-central1.run.app")
         self.api_key = api_key or os.getenv("API_GATEWAY_KEY", "")
         
         headers = {}
