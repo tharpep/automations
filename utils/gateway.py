@@ -54,6 +54,12 @@ class GatewayClient:
         response.raise_for_status()
         return response.json()
 
+    def get_calendar_today(self) -> dict:
+        """Get today's calendar events."""
+        response = self._client.get("/calendar/today")
+        response.raise_for_status()
+        return response.json()
+
     def close(self):
         """Close the underlying HTTP client."""
         self._client.close()
