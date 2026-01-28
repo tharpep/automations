@@ -33,7 +33,7 @@ def main():
         event_list = "\n".join([f"- {e['title']} at {e['start']}" for e in events])
         prompt = (
             f"Here's my calendar for today:\n{event_list}\n\n"
-            f"Give me a casual, friendly 2-3 sentence summary of my day. "
+            f"Give me a casual, friendly 1-2 sentence summary of my day. "
             f"Keep it brief and conversational."
         )
 
