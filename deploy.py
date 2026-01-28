@@ -89,11 +89,18 @@ def sync_scheduled(automation: dict, dry_run: bool = False) -> None:
         )
     )
     
+    job_exists = False
     try:
         jobs_client.get_job(name=job_name)
-        jobs_client.update_job(job=job, allow_missing=True).result()
-        print(f"    ✓ Updated job")
+        job_exists = True
     except Exception:
+        pass
+    
+    if job_exists:
+        job.name = job_name
+        jobs_client.update_job(job=job).result()
+        print(f"    ✓ Updated job")
+    else:
         jobs_client.create_job(
             parent=f"projects/{PROJECT_ID}/locations/{REGION}",
             job=job,
@@ -172,6 +179,7 @@ def sync_manual(automation: dict, dry_run: bool = False) -> None:
     
     name = automation["name"]
     file_path = automation["file"]
+    job_name = f"projects/{PROJECT_ID}/locations/{REGION}/jobs/{name}"
     
     print(f"  → Job: {name} (manual)")
     
@@ -192,10 +200,18 @@ def sync_manual(automation: dict, dry_run: bool = False) -> None:
         )
     )
     
+    job_exists = False
     try:
-        jobs_client.update_job(job=job, allow_missing=True).result()
-        print(f"    ✓ Updated job")
+        jobs_client.get_job(name=job_name)
+        job_exists = True
     except Exception:
+        pass
+    
+    if job_exists:
+        job.name = job_name
+        jobs_client.update_job(job=job).result()
+        print(f"    ✓ Updated job")
+    else:
         jobs_client.create_job(
             parent=f"projects/{PROJECT_ID}/locations/{REGION}",
             job=job,
