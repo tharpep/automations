@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PROJECT_ID = os.getenv("GCP_PROJECT_ID", "api-gateway")
+PROJECT_ID = os.getenv("GCP_PROJECT_ID", "api-gateway-485017")
 REGION = os.getenv("GCP_REGION", "us-central1")
 IMAGE_URL = f"{REGION}-docker.pkg.dev/{PROJECT_ID}/automations/automations:latest"
 AUTOMATION_FOLDERS = ["scheduled", "triggered", "manual"]

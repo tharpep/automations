@@ -136,5 +136,5 @@ gunicorn = "^21.0"
 gcloud artifacts repositories create automations \
   --repository-format=docker \
   --location=us-central1 \
-  --project=api-gateway
+  --project=api-gateway-485017
 ```
