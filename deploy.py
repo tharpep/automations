@@ -16,6 +16,9 @@ REGION = os.getenv("GCP_REGION", "us-central1")
 IMAGE_URL = f"{REGION}-docker.pkg.dev/{PROJECT_ID}/automations/automations:latest"
 AUTOMATION_FOLDERS = ["scheduled", "triggered", "manual"]
 
+# Secret Manager secret name for API gateway key
+API_KEY_SECRET = os.getenv("API_KEY_SECRET", "api-key")
+
 
 def parse_frontmatter(file_path: Path) -> dict[str, Any] | None:
     """Extract YAML frontmatter from a Python file's docstring."""
@@ -61,20 +64,20 @@ def sync_scheduled(automation: dict, dry_run: bool = False) -> None:
     """Create/update Cloud Run Job + Cloud Scheduler."""
     from google.cloud import run_v2
     from google.cloud import scheduler
-    
+
     name = automation["name"]
     schedule = automation["schedule"]
     timezone = automation.get("timezone", "America/New_York")
     file_path = automation["file"]
-    
+
     job_name = f"projects/{PROJECT_ID}/locations/{REGION}/jobs/{name}"
     scheduler_name = f"projects/{PROJECT_ID}/locations/{REGION}/jobs/{name}-trigger"
-    
+
     print(f"  → Job: {name} | Schedule: {schedule} ({timezone})")
-    
+
     if dry_run:
         return
-    
+
     jobs_client = run_v2.JobsClient()
     job = run_v2.Job(
         template=run_v2.ExecutionTemplate(
@@ -83,6 +86,17 @@ def sync_scheduled(automation: dict, dry_run: bool = False) -> None:
                     image=IMAGE_URL,
                     command=["python"],
                     args=["runner.py", file_path],
+                    env=[
+                        run_v2.EnvVar(
+                            name="API_GATEWAY_KEY",
+                            value_source=run_v2.EnvVarSource(
+                                secret_key_ref=run_v2.SecretKeySelector(
+                                    secret=f"projects/{PROJECT_ID}/secrets/{API_KEY_SECRET}",
+                                    version="latest",
+                                )
+                            ),
+                        ),
+                    ],
                 )],
                 max_retries=1,
             )
@@ -157,6 +171,17 @@ def sync_triggered(automations: list[dict], dry_run: bool = False) -> None:
                 command=["gunicorn"],
                 args=["--bind", "0.0.0.0:8080", "triggered.handler:app"],
                 ports=[run_v2.ContainerPort(container_port=8080)],
+                env=[
+                    run_v2.EnvVar(
+                        name="API_GATEWAY_KEY",
+                        value_source=run_v2.EnvVarSource(
+                            secret_key_ref=run_v2.SecretKeySelector(
+                                secret=f"projects/{PROJECT_ID}/secrets/{API_KEY_SECRET}",
+                                version="latest",
+                            )
+                        ),
+                    ),
+                ],
             )],
         ),
     )
@@ -176,16 +201,16 @@ def sync_triggered(automations: list[dict], dry_run: bool = False) -> None:
 def sync_manual(automation: dict, dry_run: bool = False) -> None:
     """Create/update Cloud Run Job (no scheduler)."""
     from google.cloud import run_v2
-    
+
     name = automation["name"]
     file_path = automation["file"]
     job_name = f"projects/{PROJECT_ID}/locations/{REGION}/jobs/{name}"
-    
+
     print(f"  → Job: {name} (manual)")
-    
+
     if dry_run:
         return
-    
+
     jobs_client = run_v2.JobsClient()
     job = run_v2.Job(
         template=run_v2.ExecutionTemplate(
@@ -194,6 +219,17 @@ def sync_manual(automation: dict, dry_run: bool = False) -> None:
                     image=IMAGE_URL,
                     command=["python"],
                     args=["runner.py", file_path],
+                    env=[
+                        run_v2.EnvVar(
+                            name="API_GATEWAY_KEY",
+                            value_source=run_v2.EnvVarSource(
+                                secret_key_ref=run_v2.SecretKeySelector(
+                                    secret=f"projects/{PROJECT_ID}/secrets/{API_KEY_SECRET}",
+                                    version="latest",
+                                )
+                            ),
+                        ),
+                    ],
                 )],
                 max_retries=1,
             )
