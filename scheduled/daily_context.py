@@ -21,7 +21,7 @@ def main():
         health = client.health()
         logger.info(f"Gateway: {health.get('status')}")
 
-        calendar = client.get_calendar_today()
+        calendar = client.get_calendar_events(days=1)
         events = calendar.get("events", [])
 
         emails = client.get_email_recent(hours=24)

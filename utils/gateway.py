@@ -54,9 +54,17 @@ class GatewayClient:
         response.raise_for_status()
         return response.json()
 
-    def get_calendar_today(self) -> dict:
-        """Get today's calendar events."""
-        response = self._client.get("/calendar/today")
+    def get_calendar_events(self, days: int = 1) -> dict:
+        """Get calendar events for the next N days.
+
+        Args:
+            days: Number of days to look ahead (default: 1 for today)
+        """
+        if days == 1:
+            # Use optimized today endpoint
+            response = self._client.get("/calendar/today")
+        else:
+            response = self._client.get(f"/calendar/events?days={days}")
         response.raise_for_status()
         return response.json()
 
