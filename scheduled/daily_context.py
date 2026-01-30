@@ -58,10 +58,9 @@ def main():
 
         prompt = (
             f"Here's my context for today:\n\n{full_context}\n\n"
-            f"Give me a casual, friendly 3-4 sentence morning briefing. "
+            f"Give me a concise, casual, friendly 3-4 sentence morning briefing. "
             f"Lead with the most important or time-sensitive thing. "
             f"Ignore promotional emails and marketing content. "
-            f"Keep it conversational and motivating."
         )
 
         try:
