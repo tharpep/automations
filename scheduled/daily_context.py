@@ -24,17 +24,44 @@ def main():
         calendar = client.get_calendar_today()
         events = calendar.get("events", [])
 
-        if not events:
-            message = "Good morning! You have a clear schedule today. ☀️"
+        emails = client.get_email_recent(hours=24)
+        messages = emails.get("messages", [])
+
+        tasks = client.get_tasks_upcoming(days=7)
+        upcoming_tasks = tasks.get("tasks", [])
+
+        if not events and not messages and not upcoming_tasks:
+            message = "Good morning! You have a clear schedule, no urgent emails, and no upcoming tasks. Enjoy your day! ☀️"
             client.notify(title="Good Morning", message=message)
-            logger.info("No events - sent default message")
+            logger.info("No events, emails, or tasks - sent default message")
             return
 
-        event_list = "\n".join([f"- {e['title']} at {e['start']}" for e in events])
+        context_parts = []
+
+        if events:
+            event_list = "\n".join([f"- {e['title']} at {e['start']}" for e in events])
+            context_parts.append(f"CALENDAR:\n{event_list}")
+
+        if messages:
+            recent_messages = messages[:10]
+            email_list = "\n".join([f"- {m['subject']} (from {m['sender']})" for m in recent_messages])
+            context_parts.append(f"EMAILS (last 24h, {len(messages)} total):\n{email_list}")
+
+        if upcoming_tasks:
+            task_list = "\n".join([
+                f"- {t['title']}" + (f" (due {t['due'][:10]})" if t.get('due') else "") + f" [{t['list_name']}]"
+                for t in upcoming_tasks[:10]
+            ])
+            context_parts.append(f"TASKS (next 7 days, {len(upcoming_tasks)} total):\n{task_list}")
+
+        full_context = "\n\n".join(context_parts)
+
         prompt = (
-            f"Here's my calendar for today:\n{event_list}\n\n"
-            f"Give me a casual, friendly 1-2 sentence summary of my day. "
-            f"Keep it brief and conversational."
+            f"Here's my context for today:\n\n{full_context}\n\n"
+            f"Give me a casual, friendly 3-4 sentence morning briefing. "
+            f"Lead with the most important or time-sensitive thing. "
+            f"Ignore promotional emails and marketing content. "
+            f"Keep it conversational and motivating."
         )
 
         try:
@@ -42,7 +69,10 @@ def main():
             summary = response["choices"][0]["message"]["content"]
         except Exception as e:
             logger.warning(f"AI failed, falling back: {e}")
-            summary = f"Good morning! You have {len(events)} event(s) today. 📅"
+            summary = (
+                f"Good morning! You have {len(events)} event(s), "
+                f"{len(messages)} email(s), and {len(upcoming_tasks)} task(s). 📅"
+            )
 
         client.notify(title="Good Morning", message=summary)
         logger.info("Notification sent")

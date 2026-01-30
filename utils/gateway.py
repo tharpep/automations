@@ -60,6 +60,26 @@ class GatewayClient:
         response.raise_for_status()
         return response.json()
 
+    def get_email_recent(self, hours: int = 24) -> dict:
+        """Get recent email messages from primary inbox.
+
+        Args:
+            hours: Number of hours to look back (default: 24)
+        """
+        response = self._client.get(f"/email/recent?hours={hours}")
+        response.raise_for_status()
+        return response.json()
+
+    def get_tasks_upcoming(self, days: int = 7) -> dict:
+        """Get upcoming tasks from configured lists.
+
+        Args:
+            days: Number of days to look ahead for due dates (default: 7)
+        """
+        response = self._client.get(f"/tasks/upcoming?days={days}")
+        response.raise_for_status()
+        return response.json()
+
     def close(self):
         """Close the underlying HTTP client."""
         self._client.close()
