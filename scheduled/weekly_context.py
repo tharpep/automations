@@ -50,10 +50,10 @@ def main():
 
         prompt = (
             f"Here's my week ahead:\n\n{full_context}\n\n"
-            f"Give me a 3-4 sentence weekly preview. "
+            f"Give me a short, concise, 3-4 sentence weekly preview. "
+            f" Skip a greeting and instead lead with the most important or time-sensitive thing. "
             f"Highlight key commitments, busy days, or important deadlines. "
             f"Keep it motivating and help me feel prepared. "
-            f"Use a forward-looking, planning tone."
         )
 
         try:
