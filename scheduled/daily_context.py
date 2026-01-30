@@ -8,6 +8,8 @@ enabled: true
 ---
 """
 
+from datetime import datetime
+
 from utils import GatewayClient, setup_logger, load_config
 
 
@@ -27,11 +29,14 @@ def main():
         emails = client.get_email_recent(hours=24)
         messages = emails.get("messages", [])
 
-        tasks = client.get_tasks_upcoming(days=7)
+        tasks = client.get_tasks_upcoming(days=1)
         upcoming_tasks = tasks.get("tasks", [])
 
+        # Get current date for context
+        today = datetime.now().strftime("%A, %B %d, %Y")
+
         if not events and not messages and not upcoming_tasks:
-            message = "Good morning! You have a clear schedule, no urgent emails, and no upcoming tasks. Enjoy your day! ☀️"
+            message = "You have a clear schedule, no urgent emails, and no tasks due today. Enjoy your day! ☀️"
             client.notify(title="Good Morning", message=message)
             logger.info("No events, emails, or tasks - sent default message")
             return
@@ -49,17 +54,18 @@ def main():
 
         if upcoming_tasks:
             task_list = "\n".join([
-                f"- {t['title']}" + (f" (due {t['due'][:10]})" if t.get('due') else "") + f" [{t['list_name']}]"
+                f"- {t['title']} [{t['list_name']}]"
                 for t in upcoming_tasks[:10]
             ])
-            context_parts.append(f"TASKS (next 7 days, {len(upcoming_tasks)} total):\n{task_list}")
+            context_parts.append(f"TASKS (due today, {len(upcoming_tasks)} total):\n{task_list}")
 
         full_context = "\n\n".join(context_parts)
 
         prompt = (
-            f"Here's my context for today:\n\n{full_context}\n\n"
+            f"Today is {today}. Here's my context:\n\n{full_context}\n\n"
             f"Give me a concise, casual, friendly 3-4 sentence morning briefing. "
-            f" Skip a greeting and instead lead with the most important or time-sensitive thing. "
+            f"Skip greetings and don't mention today's date (I already know it's {today}). "
+            f"Lead with the most important or time-sensitive thing. "
             f"Ignore promotional emails and marketing content. "
         )
 
@@ -69,8 +75,8 @@ def main():
         except Exception as e:
             logger.warning(f"AI failed, falling back: {e}")
             summary = (
-                f"Good morning! You have {len(events)} event(s), "
-                f"{len(messages)} email(s), and {len(upcoming_tasks)} task(s). 📅"
+                f"You have {len(events)} event(s), "
+                f"{len(messages)} email(s), and {len(upcoming_tasks)} task(s) due today. 📅"
             )
 
         client.notify(title="Good Morning", message=summary)
