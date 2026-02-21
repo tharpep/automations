@@ -16,8 +16,9 @@ REGION = os.getenv("GCP_REGION", "us-central1")
 IMAGE_URL = f"{REGION}-docker.pkg.dev/{PROJECT_ID}/automations/automations:latest"
 AUTOMATION_FOLDERS = ["scheduled", "triggered", "manual"]
 
-# Secret Manager secret name for API gateway key
+# Secret Manager secret names
 API_KEY_SECRET = os.getenv("API_KEY_SECRET", "api-key")
+SAZED_URL_SECRET = os.getenv("SAZED_URL_SECRET", "sazed-url")
 
 
 def parse_frontmatter(file_path: Path) -> dict[str, Any] | None:
@@ -89,6 +90,24 @@ def sync_scheduled(automation: dict, dry_run: bool = False) -> None:
                     env=[
                         run_v2.EnvVar(
                             name="API_GATEWAY_KEY",
+                            value_source=run_v2.EnvVarSource(
+                                secret_key_ref=run_v2.SecretKeySelector(
+                                    secret=f"projects/{PROJECT_ID}/secrets/{API_KEY_SECRET}",
+                                    version="latest",
+                                )
+                            ),
+                        ),
+                        run_v2.EnvVar(
+                            name="SAZED_URL",
+                            value_source=run_v2.EnvVarSource(
+                                secret_key_ref=run_v2.SecretKeySelector(
+                                    secret=f"projects/{PROJECT_ID}/secrets/{SAZED_URL_SECRET}",
+                                    version="latest",
+                                )
+                            ),
+                        ),
+                        run_v2.EnvVar(
+                            name="SAZED_API_KEY",
                             value_source=run_v2.EnvVarSource(
                                 secret_key_ref=run_v2.SecretKeySelector(
                                     secret=f"projects/{PROJECT_ID}/secrets/{API_KEY_SECRET}",
@@ -222,6 +241,24 @@ def sync_manual(automation: dict, dry_run: bool = False) -> None:
                     env=[
                         run_v2.EnvVar(
                             name="API_GATEWAY_KEY",
+                            value_source=run_v2.EnvVarSource(
+                                secret_key_ref=run_v2.SecretKeySelector(
+                                    secret=f"projects/{PROJECT_ID}/secrets/{API_KEY_SECRET}",
+                                    version="latest",
+                                )
+                            ),
+                        ),
+                        run_v2.EnvVar(
+                            name="SAZED_URL",
+                            value_source=run_v2.EnvVarSource(
+                                secret_key_ref=run_v2.SecretKeySelector(
+                                    secret=f"projects/{PROJECT_ID}/secrets/{SAZED_URL_SECRET}",
+                                    version="latest",
+                                )
+                            ),
+                        ),
+                        run_v2.EnvVar(
+                            name="SAZED_API_KEY",
                             value_source=run_v2.EnvVarSource(
                                 secret_key_ref=run_v2.SecretKeySelector(
                                     secret=f"projects/{PROJECT_ID}/secrets/{API_KEY_SECRET}",

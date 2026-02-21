@@ -8,7 +8,14 @@ enabled: true
 ---
 """
 
-from utils import GatewayClient, setup_logger, load_config
+from utils import SazedClient, GatewayClient, setup_logger, load_config
+
+PROMPT = (
+    "Check my calendar and tasks for the next 7 days. "
+    "Give me a weekly preview in exactly 1-2 sentences, 35 words max. "
+    "Lead with the busiest day or most important deadline. "
+    "No greeting, no sign-off, no filler."
+)
 
 
 def main():
@@ -17,57 +24,36 @@ def main():
 
     logger.info("Starting weekly context")
 
-    with GatewayClient() as client:
-        health = client.health()
-        logger.info(f"Gateway: {health.get('status')}")
+    try:
+        with SazedClient() as agent:
+            summary = agent.chat(PROMPT, session_id="automation-weekly")
 
-        calendar = client.get_calendar_events(days=7)
-        events = calendar.get("events", [])
+        logger.info(f"Agent response: {summary}")
+    except Exception as e:
+        logger.warning(f"Agent call failed, falling back to gateway: {e}")
+        summary = _fallback_summary(logger)
 
-        tasks = client.get_tasks_upcoming(days=7)
-        upcoming_tasks = tasks.get("tasks", [])
+    with GatewayClient() as gateway:
+        gateway.notify(title="Weekly Preview", message=summary)
 
-        if not events and not upcoming_tasks:
-            message = "Your week looks wide open! No scheduled events or pressing tasks. Time to make some plans or just enjoy the freedom. 🌴"
-            client.notify(title="Weekly Preview", message=message)
-            logger.info("No events or tasks - sent default message")
-            return
+    logger.info("Notification sent")
 
-        context_parts = []
 
+def _fallback_summary(logger) -> str:
+    """Minimal fallback if the agent is unavailable."""
+    try:
+        with GatewayClient() as client:
+            events = client.get_calendar_events(days=7).get("events", [])
+            tasks = client.get_tasks_upcoming(days=7).get("tasks", [])
+        parts = []
         if events:
-            event_list = "\n".join([f"- {e['title']} ({e['start'][:10]})" for e in events[:15]])
-            context_parts.append(f"CALENDAR (next 7 days, {len(events)} total):\n{event_list}")
-
-        if upcoming_tasks:
-            task_list = "\n".join([
-                f"- {t['title']}" + (f" (due {t['due'][:10]})" if t.get('due') else "") + f" [{t['list_name']}]"
-                for t in upcoming_tasks[:15]
-            ])
-            context_parts.append(f"TASKS (next 7 days, {len(upcoming_tasks)} total):\n{task_list}")
-
-        full_context = "\n\n".join(context_parts)
-
-        prompt = (
-            f"Here's my week ahead:\n\n{full_context}\n\n"
-            f"Give me a short, concise, 3-4 sentence weekly preview. "
-            f" Skip a greeting and instead lead with the most important or time-sensitive thing. "
-            f"Highlight key commitments, busy days, or important deadlines. "
-            f"Keep it motivating and help me feel prepared. "
-        )
-
-        try:
-            response = client.ai_chat([{"role": "user", "content": prompt}])
-            summary = response["choices"][0]["message"]["content"]
-        except Exception as e:
-            logger.warning(f"AI failed, falling back: {e}")
-            summary = (
-                f"Week ahead: {len(events)} event(s) and {len(upcoming_tasks)} task(s) "
-                f"scheduled. Check your calendar for details. 📅"
-            )
-
-        client.notify(title="Weekly Preview", message=summary)
-        logger.info("Notification sent")
+            parts.append(f"{len(events)} event(s) this week")
+        if tasks:
+            parts.append(f"{len(tasks)} task(s) upcoming")
+        return ", ".join(parts) + "." if parts else "Clear week ahead."
+    except Exception as e:
+        logger.error(f"Fallback also failed: {e}")
+        return "Could not retrieve weekly context."
 
 
 if __name__ == "__main__":
