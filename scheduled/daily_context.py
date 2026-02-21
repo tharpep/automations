@@ -8,7 +8,12 @@ enabled: true
 ---
 """
 
+import uuid
+
 from utils import SazedClient, GatewayClient, setup_logger, load_config
+
+# Stable UUID for the daily automation session — deterministic, persists memory across runs
+SESSION_ID = str(uuid.uuid5(uuid.NAMESPACE_DNS, "automation-daily"))
 
 PROMPT = (
     "Check my calendar, tasks due today, and unread emails. "
@@ -26,7 +31,7 @@ def main():
 
     try:
         with SazedClient() as agent:
-            summary = agent.chat(PROMPT, session_id="automation-daily")
+            summary = agent.chat(PROMPT, session_id=SESSION_ID)
 
         logger.info(f"Agent response: {summary}")
     except Exception as e:
