@@ -19,7 +19,7 @@ PROMPT = (
     "Check my calendar and tasks for the next 7 days. "
     "Give me a weekly preview in exactly 1-2 sentences, 35 words max. "
     "Lead with the busiest day or most important deadline. "
-    "No greeting, no sign-off, no filler."
+    "No greeting, no sign-off, no filler, no markdown — plain text only."
 )
 
 

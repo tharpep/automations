@@ -1,8 +1,27 @@
 """Sazed agent client for automations."""
 
 import os
+import re
 
 import httpx
+
+
+def strip_markdown(text: str) -> str:
+    """Remove common markdown formatting for plain-text delivery (e.g. Pushover)."""
+    # Bold / italic: ***text***, **text**, *text*, __text__, _text_
+    text = re.sub(r'\*{1,3}(.+?)\*{1,3}', r'\1', text)
+    text = re.sub(r'_{1,2}(.+?)_{1,2}', r'\1', text)
+    # Inline code
+    text = re.sub(r'`(.+?)`', r'\1', text)
+    # Headers
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    # Bullet points — replace with a dash-free version
+    text = re.sub(r'^\s*[-*+]\s+', '', text, flags=re.MULTILINE)
+    # Numbered lists
+    text = re.sub(r'^\s*\d+\.\s+', '', text, flags=re.MULTILINE)
+    # Collapse excess whitespace/newlines
+    text = re.sub(r'\n{2,}', ' ', text)
+    return text.strip()
 
 
 class SazedClient:
@@ -24,7 +43,7 @@ class SazedClient:
 
         response = self._client.post("/chat", json=payload)
         response.raise_for_status()
-        return response.json()["response"]
+        return strip_markdown(response.json()["response"])
 
     def close(self):
         self._client.close()

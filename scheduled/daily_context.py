@@ -19,7 +19,7 @@ PROMPT = (
     "Check my calendar, tasks due today, and unread emails. "
     "Give me a morning briefing in exactly 1-2 sentences, 35 words max. "
     "Lead with the single most urgent or time-sensitive thing. "
-    "No greeting, no sign-off, no filler."
+    "No greeting, no sign-off, no filler, no markdown — plain text only."
 )
 
 
