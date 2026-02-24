@@ -28,13 +28,11 @@ class GatewayClient:
         return response.json()
 
     def health(self) -> dict:
-        """Get gateway health status."""
         response = self._client.get("/health")
         response.raise_for_status()
         return response.json()
 
     def integrations(self) -> dict:
-        """Get integration status."""
         response = self._client.get("/health/integrations")
         response.raise_for_status()
         return response.json()
@@ -46,7 +44,6 @@ class GatewayClient:
         return response.json()
 
     def ai_chat(self, messages: list[dict], model: str | None = None, stream: bool = False) -> dict:
-        """Send a chat completion request."""
         payload = {"messages": messages, "stream": stream}
         if model:
             payload["model"] = model

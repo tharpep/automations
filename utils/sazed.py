@@ -36,7 +36,6 @@ class SazedClient:
         self._client = httpx.Client(base_url=self.base_url, timeout=60.0, headers=headers)
 
     def chat(self, message: str, session_id: str | None = None) -> str:
-        """Send a message to the Sazed agent and return the response text."""
         payload: dict = {"message": message}
         if session_id:
             payload["session_id"] = session_id

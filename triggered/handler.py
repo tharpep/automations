@@ -13,7 +13,6 @@ BASE_PATH = Path(__file__).parent.parent
 
 
 def load_automation(file_path: str):
-    """Dynamically load an automation module."""
     full_path = BASE_PATH / file_path
     spec = importlib.util.spec_from_file_location("automation", full_path)
     module = importlib.util.module_from_spec(spec)
@@ -72,4 +71,4 @@ def handle_request(path):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=False)

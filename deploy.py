@@ -8,6 +8,7 @@ from typing import Any
 
 import yaml
 from dotenv import load_dotenv
+from google.cloud import run_v2, scheduler
 
 load_dotenv()
 
@@ -63,9 +64,6 @@ def discover_automations() -> list[dict[str, Any]]:
 
 def sync_scheduled(automation: dict, dry_run: bool = False) -> None:
     """Create/update Cloud Run Job + Cloud Scheduler."""
-    from google.cloud import run_v2
-    from google.cloud import scheduler
-
     name = automation["name"]
     schedule = automation["schedule"]
     timezone = automation.get("timezone", "America/New_York")
@@ -169,8 +167,6 @@ def sync_scheduled(automation: dict, dry_run: bool = False) -> None:
 
 def sync_triggered(automations: list[dict], dry_run: bool = False) -> None:
     """Create/update Cloud Run Service for triggered automations."""
-    from google.cloud import run_v2
-    
     if not automations:
         return
     
@@ -219,8 +215,6 @@ def sync_triggered(automations: list[dict], dry_run: bool = False) -> None:
 
 def sync_manual(automation: dict, dry_run: bool = False) -> None:
     """Create/update Cloud Run Job (no scheduler)."""
-    from google.cloud import run_v2
-
     name = automation["name"]
     file_path = automation["file"]
     job_name = f"projects/{PROJECT_ID}/locations/{REGION}/jobs/{name}"
