@@ -1,6 +1,10 @@
 # Automations
 
-One place for all automation scripts, organized by trigger type.
+One place for all automation scripts, organized by trigger type. Scripts call the [api-gateway](https://github.com/tharpep/api-gateway) for all external integrations.
+
+## Ecosystem
+
+Part of a personal AI ecosystem — see [sazed](https://github.com/tharpep/sazed) for the full picture.
 
 ## Structure
 
