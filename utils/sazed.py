@@ -44,6 +44,28 @@ class SazedClient:
         response.raise_for_status()
         return strip_markdown(response.json()["response"])
 
+    def think(
+        self,
+        context: str | None = None,
+        timezone: str | None = None,
+        trigger: str | None = None,
+        session_id: str | None = None,
+    ) -> dict:
+        """Trigger an autonomous think session. Returns {"session_id", "acted", "summary"}."""
+        payload: dict = {}
+        if context:
+            payload["context"] = context
+        if timezone:
+            payload["timezone"] = timezone
+        if trigger:
+            payload["trigger"] = trigger
+        if session_id:
+            payload["session_id"] = session_id
+
+        response = self._client.post("/think", json=payload, timeout=120.0)
+        response.raise_for_status()
+        return response.json()
+
     def close(self):
         self._client.close()
 
