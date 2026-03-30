@@ -4,7 +4,7 @@ name: think
 type: scheduled
 schedule: "50 8,13,20 * * *"
 timezone: America/New_York
-enabled: true
+enabled: false
 ---
 """
 

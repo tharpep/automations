@@ -4,7 +4,7 @@ name: daily-context
 type: scheduled
 schedule: "0 9 * * *"
 timezone: America/New_York
-enabled: true
+enabled: false
 ---
 """
 

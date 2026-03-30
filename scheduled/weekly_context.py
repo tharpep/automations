@@ -4,7 +4,7 @@ name: weekly-context
 type: scheduled
 schedule: "0 18 * * 0"
 timezone: America/New_York
-enabled: true
+enabled: false
 ---
 """
 
