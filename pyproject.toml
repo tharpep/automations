@@ -16,6 +16,8 @@ google-cloud-run = "^0.10"
 google-cloud-scheduler = "^2.13"
 flask = "^3.0"
 gunicorn = "^21.0"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
 
 
 [tool.poetry.group.dev.dependencies]
